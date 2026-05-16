@@ -14,21 +14,29 @@ int main() {
     int measured_runs = 10;
 
     CpuPricer cpu_pricer;
+    GpuPricer gpu_pricer;
 
     BenchmarkRunner benchmark_runner(
         warmup_runs,
         measured_runs,
-        cpu_pricer
+        cpu_pricer,
+        gpu_pricer
     );
 
     // run experiments
     BenchmarkResult result = benchmark_runner.run(options, steps);
 
-    std::cout << "Number of options per step: " << result.num_options << '\n';
-    std::cout << "Steps: " << result.steps << '\n';
-    std::cout << "CPU mean time per option (ms): " << result.cpu_time_per_option_price_ms << '\n';
-    std::cout << "CPU step mean time (ms): " << result.cpu_batch_mean_time_ms << '\n';
-    std::cout << "CPU step std dev (ms): " << result.cpu_batch_std_time_ms << '\n';
+    std::cout << "Number of options per step: " << result.num_options << std::endl;
+    std::cout << "Steps: " << result.steps << std::endl;
+    std::cout << "Speedup: gpu is " << result.avg_gpu_speedup << "x speed of cpu" << std::endl;
+    std::cout << std::endl;
+    std::cout << "CPU mean time per option (ms): " << result.cpu_time_per_option_price_ms << std::endl;
+    std::cout << "CPU step mean time (ms): " << result.cpu_batch_mean_time_ms << std::endl;
+    std::cout << "CPU step std dev (ms): " << result.cpu_batch_std_time_ms << std::endl;
+    std::cout << std::endl;
+    std::cout << "GPU mean time per option (ms): " << result.gpu_time_per_option_price_ms << std::endl;
+    std::cout << "GPU step mean time (ms): " << result.gpu_batch_mean_time_ms << std::endl;
+    std::cout << "GPU step std dev (ms): " << result.gpu_batch_std_time_ms << std::endl;
     
 
     // possibly save benchmark result for python plotting
