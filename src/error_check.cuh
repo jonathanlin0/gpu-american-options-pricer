@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <cstdlib>
-#include "cuda_runtime.cuh"
+#include "cuda_runtime.h"
 
 /// CUDA error check macro, which exists on failure
 /// https://stackoverflow.com/a/14038590
