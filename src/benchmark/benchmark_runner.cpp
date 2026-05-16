@@ -5,6 +5,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <iostream>
+#include <cassert>
 
 
 using std::accumulate;
@@ -12,6 +13,9 @@ using std::sqrt;
 using std::vector;
 using std::cout;
 using std::endl;
+
+constexpr float ABSOLUTE_TOLERANCE = 1e-4f;
+constexpr float RELATIVE_TOLERANCE = 1e-5f;
 
 BenchmarkRunner::BenchmarkRunner(
     int warmup_runs,
@@ -59,14 +63,21 @@ BenchmarkResult BenchmarkRunner::run(
         cout << "batch " << i << "/" << measured_runs_ << endl;
 
         auto cpu_start = std::chrono::steady_clock::now();
-        cpu_pricer_.price(options, steps); // can maybe save the prices in the future to check error margin
+        vector<float> cpu_prices = cpu_pricer_.price(options, steps); // can maybe save the prices in the future to check error margin
         auto cpu_end = std::chrono::steady_clock::now();
         float cpu_elapsed_ms = std::chrono::duration<float, std::milli>(cpu_end - cpu_start).count();
 
         auto gpu_start = std::chrono::steady_clock::now();
-        gpu_pricer_.price(options, steps); // can maybe save the prices in the future to check error margin
+        vector<float> gpu_prices = gpu_pricer_.price(options, steps); // can maybe save the prices in the future to check error margin
         auto gpu_end = std::chrono::steady_clock::now();
         float gpu_elapsed_ms = std::chrono::duration<float, std::milli>(gpu_end - gpu_start).count();
+
+        for (size_t j = 0; j < options.size(); j++) {
+            if (abs(cpu_prices[j] - gpu_prices[j]) > ABSOLUTE_TOLERANCE + (RELATIVE_TOLERANCE * abs(cpu_prices[j]))) {
+                cout << "cpu price " << cpu_prices[j] << " and gpu price " << gpu_prices[j] << " diverged." << endl;
+                throw std::runtime_error("CPU and GPU prices diverged");
+            }
+        }
 
         cpu_times_ms.push_back(cpu_elapsed_ms);
         gpu_times_ms.push_back(gpu_elapsed_ms);
