@@ -1,11 +1,45 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <stdexcept>
+#include <string>
+#include <thread>
 
 #include "benchmark/sample_options.hpp"
 #include "benchmark/benchmark_runner.hpp"
 #include "pricing/cpu_pricer.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
+    std::size_t num_workers = 8;
+
+    for (int i = 1; i < argc; i++) {
+        if (std::string(argv[i]) == "--num_workers" && i + 1 < argc) {
+            try {
+                num_workers = std::stoul(argv[++i]);
+            } catch (const std::invalid_argument& e) {
+                std::cerr << "--num_workers must be an integer\n";
+                return 1;
+            } 
+        } else {
+            std::cerr << "Usage: " << argv[0] << " [--num_workers <N>]" << std::endl;
+            return 1;
+        }
+    }
+
+    // cap num_workers to the number of logical cores on the cpu
+    try {
+        unsigned int num_logical_cores = std::thread::hardware_concurrency(); // returns 0 if unable to detect
+        if (num_logical_cores != 0) {
+            num_workers = std::min(static_cast<std::size_t>(num_logical_cores), num_workers);
+        }
+    } catch (const std::exception&) {
+        std::cout << "Failed to retrieve maximum number of logical cores." << std::endl;
+    }
+
+    std::cout << "num_workers: " << num_workers << std::endl;
+    
+
+
     // get option chains
     std::vector<Option> options = make_sample_option_chain("small");
 
@@ -13,7 +47,7 @@ int main() {
     int warmup_runs = 3;
     int measured_runs = 10;
 
-    CpuPricer cpu_pricer{4};
+    CpuPricer cpu_pricer{ num_workers };
     GpuPricer gpu_pricer;
 
     BenchmarkRunner benchmark_runner(
