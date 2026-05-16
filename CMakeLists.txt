@@ -14,13 +14,12 @@ add_executable(options_pricer
     src/benchmark/benchmark_runner.cpp
     src/benchmark/sample_options.cpp
     src/pricing/cpu_pricer.cpp
+    src/pricing/gpu_pricer.cu
 )
 
 target_include_directories(options_pricer PRIVATE src)
 
 # some flags for useful compiler warnings
 target_compile_options(options_pricer PRIVATE
-    -Wall # 
-    -Wextra
-    -Wpedantic
+    $<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wpedantic>
 )
