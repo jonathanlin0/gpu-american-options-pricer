@@ -34,10 +34,13 @@ BenchmarkResult BenchmarkRunner::run(
     const std::vector<Option>& options,
     int steps
 ) const {
+    if (options.empty()) {
+        throw std::invalid_argument("options must not be empty");
+    }
     if (steps <= 0) {
         throw std::invalid_argument("steps must be positive");
     }
-
+    
     // warmup
     cout << "starting warmup" << endl;
     for (int i = 0; i < warmup_runs_; i++) {
@@ -57,20 +60,23 @@ BenchmarkResult BenchmarkRunner::run(
         cpu_times_ms.push_back(elapsed_ms);
     }
 
-    float cpu_mean_time_ms = accumulate(cpu_times_ms.begin(), cpu_times_ms.end(), 0.0f) / cpu_times_ms.size();
-    float cpu_std_time_ms = sqrt(accumulate(
+    float cpu_batch_mean_time_ms = accumulate(cpu_times_ms.begin(), cpu_times_ms.end(), 0.0f) / cpu_times_ms.size();
+    float cpu_batch_std_time_ms = sqrt(accumulate(
         cpu_times_ms.begin(),
         cpu_times_ms.end(),
         0.0f,
-        [cpu_mean_time_ms](float acc, float x) {
-            return acc + (x - cpu_mean_time_ms) * (x - cpu_mean_time_ms);
+        [cpu_batch_mean_time_ms](float acc, float x) {
+            return acc + (x - cpu_batch_mean_time_ms) * (x - cpu_batch_mean_time_ms);
         }
     ) / cpu_times_ms.size());
+    float cpu_time_per_option_price_ms = cpu_batch_mean_time_ms / options.size();
 
     return BenchmarkResult{
-        cpu_mean_time_ms,
+        cpu_batch_mean_time_ms,
         -1,
-        cpu_std_time_ms,
+        cpu_batch_std_time_ms,
+        -1,
+        cpu_time_per_option_price_ms,
         -1,
         -1,
         cpu_times_ms,
