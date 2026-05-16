@@ -13,7 +13,7 @@ int main() {
     int warmup_runs = 3;
     int measured_runs = 10;
 
-    CpuPricer cpu_pricer;
+    CpuPricer cpu_pricer{4};
     GpuPricer gpu_pricer;
 
     BenchmarkRunner benchmark_runner(

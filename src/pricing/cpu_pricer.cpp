@@ -1,17 +1,20 @@
 #include "cpu_pricer.hpp"
 #include <cmath>
 #include <algorithm>
+#include <stdexcept>
+#include <thread>
 
 using std::vector;
+using std::size_t;
 
-vector<float> CpuPricer::price(
-    const vector<Option>& options,
-    int steps
-) const {
+CpuPricer::CpuPricer(size_t num_threads) : num_threads_(num_threads) {
+    if (num_threads == 0) {
+        throw std::invalid_argument("num_threads must be positive");
+    }
+}
 
-    vector<float> prices;
-
-    for (const Option& option : options) {
+namespace {
+    float price_one_option(const Option& option, int steps) {
         float delta_t = option.maturity_years / steps;
         float u = expf(option.vol_annualized * sqrtf(delta_t));
         float d = expf(-option.vol_annualized * sqrtf(delta_t));
@@ -53,8 +56,37 @@ vector<float> CpuPricer::price(
             }
         }
 
-        prices.push_back(payoffs[0]);
+        return payoffs[0];
     }
+}
+
+
+vector<float> CpuPricer::price(
+    const vector<Option>& options,
+    int steps
+) const {
+
+    vector<float> prices(options.size());
+
+    vector<std::thread> threads;
+    size_t worker_count = std::min(num_threads_, options.size());
+
+    /*
+     * striding pattern. each thread takes care of one option price calculation.
+     * will stride option price calculations by `worker_count` if worker_count < options.size()
+    */
+    for (size_t thread_id = 0; thread_id < worker_count; thread_id++) {
+        threads.emplace_back([&, thread_id]() {
+            for (size_t i = thread_id; i < options.size(); i += worker_count) {
+                prices[i] = price_one_option(options[i], steps);
+            }
+        });
+    }
+
+    for (std::thread& thread : threads) {
+        thread.join();
+    }
+
 
     return prices;
 }
