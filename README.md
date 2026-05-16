@@ -2,6 +2,13 @@
 
 ## Installation and Usage
 
+From the repo root:
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+./build/options_pricer
+```
+
 ## Project Description
 
 This project will price the fair value (FV) of American options using the binomial model.
