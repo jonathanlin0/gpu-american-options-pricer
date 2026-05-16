@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "../pricing/option.hpp"
+#include "pricing/option.hpp"
 
 /**
  * Generates synthetic option data for benchmarking.

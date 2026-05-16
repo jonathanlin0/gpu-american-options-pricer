@@ -2,8 +2,8 @@
 
 #include <vector>
 #include "benchmark_result.hpp"
-#include "../pricing/option.hpp"
-#include "../pricing/cpu_pricer.hpp"
+#include "pricing/option.hpp"
+#include "pricing/cpu_pricer.hpp"
 
 
 class BenchmarkRunner {
