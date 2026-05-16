@@ -34,8 +34,8 @@ struct Option {
             throw std::invalid_argument("maturity_years must be positive");
         }
 
-        if (vol_annualized < 0.0f) {
-            throw std::invalid_argument("vol_annualized must be non-negative");
+        if (vol_annualized <= 0.0f) { // we don't consider 0 vol options, or else that's the trivial case and no point in solving for the value
+            throw std::invalid_argument("vol_annualized must be positive");
         }
     }
 
