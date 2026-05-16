@@ -42,16 +42,17 @@ BenchmarkResult BenchmarkRunner::run(
     }
     
     // warmup
-    cout << "starting warmup" << endl;
+    cout << "Starting warmup..." << endl;
     for (int i = 0; i < warmup_runs_; i++) {
         cpu_pricer_.price(options, steps);
     }
+    cout << "Finished warmup" << endl;
 
     // timed runs
     vector<float> cpu_times_ms;
-    cout << "starting timed runs" << endl;
+    cout << "Starting timed batch runs..." << endl;
     for (int i = 0; i < measured_runs_; i++) {
-        cout << "run " << i << "/" << measured_runs_ << endl;
+        cout << "batch " << i << "/" << measured_runs_ << endl;
         auto start = std::chrono::steady_clock::now();
         cpu_pricer_.price(options, steps); // can maybe save the prices in the future to check error margin
         auto end = std::chrono::steady_clock::now();
@@ -59,6 +60,7 @@ BenchmarkResult BenchmarkRunner::run(
 
         cpu_times_ms.push_back(elapsed_ms);
     }
+    cout << "Finished timed batch runs" << endl;
 
     float cpu_batch_mean_time_ms = accumulate(cpu_times_ms.begin(), cpu_times_ms.end(), 0.0f) / cpu_times_ms.size();
     float cpu_batch_std_time_ms = sqrt(accumulate(
