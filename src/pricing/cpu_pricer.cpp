@@ -20,7 +20,7 @@ vector<float> CpuPricer::price(
         float u = exp(option.vol_annualized * sqrt(delta_t));
         float d = exp(-option.vol_annualized * sqrt(delta_t));
         float r = option.risk_free_rate_annualized;
-        float q = (exp(r * delta_t) - d) / (u - d); // chance of stock going up
+        float q = (exp(r * delta_t) - d) / (u - d); // risk-neutral chance of stock going up
 
         // fill out payoffs for end state at time option.maturity_years
         // payoffs[i] is payoff with i net "ups"

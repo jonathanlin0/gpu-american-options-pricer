@@ -23,6 +23,7 @@ For a single equity option, the cartesian product of expiration dates and strike
 
 ### Assumptions
 - No dividends
+- Lognormal stock-price dynamics: the log price moves up or down by $\pm \sigma \sqrt{\delta t}$
 
 ## Project Features
 
