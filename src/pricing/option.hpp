@@ -6,10 +6,10 @@ enum class OptionType {
 };
 
 struct Option {
-    double spot;
-    double strike;
-    double maturity_years; // in years
-    double risk_free_rate_annualized; // annualized risk-free rate
-    double vol_annualized; // annualized volatility
+    float spot;
+    float strike;
+    float maturity_years; // in years
+    float risk_free_rate_annualized; // annualized risk-free rate
+    float vol_annualized; // annualized volatility
     OptionType type;
 };

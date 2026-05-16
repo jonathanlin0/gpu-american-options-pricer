@@ -3,17 +3,19 @@
 #include <vector>
 
 struct BenchmarkResult {
-    double avg_cpu_time_ms;
-    double avg_gpu_time_ms;
-    double p99_cpu_time_ms;
-    double p99_gpu_time_ms;
-    double avg_gpu_speedup; // ratio of gpu speed to cpu speed
-    double p99_gpu_speedup;
+    float avg_cpu_time_ms;
+    float avg_gpu_time_ms;
+    float std_cpu_time_ms;
+    float std_gpu_time_ms;
+    float p99_cpu_time_ms;
+    float p99_gpu_time_ms;
+    float avg_gpu_speedup; // ratio of gpu speed to cpu speed
+    float p99_gpu_speedup;
 
-    std::vector<double> cpu_times_ms;
-    std::vector<double> gpu_times_ms;
-    std::vector<double> cpu_prices;
-    std::vector<double> gpu_prices;
+    std::vector<float> cpu_times_ms;
+    std::vector<float> gpu_times_ms;
+    std::vector<float> cpu_prices;
+    std::vector<float> gpu_prices;
 
     int num_options;
     int steps;
