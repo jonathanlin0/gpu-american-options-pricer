@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cstddef>
 
 struct BenchmarkResult {
     float cpu_batch_mean_time_ms;
@@ -14,6 +15,6 @@ struct BenchmarkResult {
     std::vector<float> cpu_times_ms;
     std::vector<float> gpu_times_ms;
 
-    size_t num_options;
+    std::size_t num_options;
     int steps;
 };
