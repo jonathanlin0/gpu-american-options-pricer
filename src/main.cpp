@@ -20,11 +20,11 @@ int main(int argc, char* argv[]) {
     std::string size = "small";
 
     for (int i = 1; i < argc; i++) {
-        if (std::string(argv[i]) == "--num_workers" && i + 1 < argc) {
+        if (std::string(argv[i]) == "--num-workers" && i + 1 < argc) {
             try {
                 num_workers = std::stoul(argv[++i]);
             } catch (const std::invalid_argument& e) {
-                std::cerr << "--num_workers must be an integer\n";
+                std::cerr << "--num-workers must be an integer\n";
                 return 1;
             }
         } else if (std::string(argv[i]) == "--steps" && i + 1 < argc) {
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
         } else if (std::string(argv[i]) == "--output-dir" && i + 1 < argc) {
             output_dir = argv[++i];
         } else {
-            std::cerr << "Usage: " << argv[0] << " [--num_workers <N>] [--steps <N>] [--size <small|medium|large>] [--output-dir <PATH>]" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " [--num-workers <N>] [--steps <N>] [--size <small|medium|large>] [--output-dir <PATH>]" << std::endl;
             return 1;
         }
     }
