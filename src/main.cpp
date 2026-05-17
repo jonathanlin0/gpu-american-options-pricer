@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
     std::size_t num_workers = 8;
     int steps = 1000;
     std::string output_dir = "data/";
+    std::string size = "small";
 
     for (int i = 1; i < argc; i++) {
         if (std::string(argv[i]) == "--num_workers" && i + 1 < argc) {
@@ -33,10 +34,12 @@ int main(int argc, char* argv[]) {
                 std::cerr << "--steps must be an integer\n";
                 return 1;
             }
+        } else if (std::string(argv[i]) == "--size" && i + 1 < argc) {
+            size = argv[++i];
         } else if (std::string(argv[i]) == "--output-dir" && i + 1 < argc) {
             output_dir = argv[++i];
         } else {
-            std::cerr << "Usage: " << argv[0] << " [--num_workers <N>] [--steps <N>] [--output-dir <PATH>]" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " [--num_workers <N>] [--steps <N>] [--size <small|medium|large>] [--output-dir <PATH>]" << std::endl;
             return 1;
         }
     }
@@ -54,16 +57,15 @@ int main(int argc, char* argv[]) {
     std::cout << "num_workers: " << num_workers << std::endl;
     std::cout << "steps: " << steps << std::endl;
     std::cout << "output_dir: " << output_dir << std::endl;
+    std::cout << "size: " << size << std::endl;
 
     // create output dir if it doesn't exist yet
     std::filesystem::create_directories(output_dir);
 
     // create logging jsonl file if it doesn't exist yet
+    // TODO: change output_dir to just output_file
     std::string jsonl_filepath = output_dir
-        + std::to_string(num_workers)
-        + "_"
-        + std::to_string(steps)
-        + ".jsonl";
+        + "data.jsonl";
     {
         std::ofstream jsonl_file(jsonl_filepath, std::ios::app);
         if (!jsonl_file) {
@@ -75,7 +77,7 @@ int main(int argc, char* argv[]) {
 
 
     // get option chains
-    std::vector<Option> options = make_sample_option_chain("small");
+    std::vector<Option> options = make_sample_option_chain(size);
 
     int warmup_runs = 3;
     int measured_runs = 10;
@@ -132,6 +134,7 @@ int main(int argc, char* argv[]) {
         << "{"
         << "\"num_workers\":" << num_workers << ","
         << "\"steps\":" << result.steps << ","
+        << "\"size\":\"" << size << "\","
         << "\"warmup_runs\":" << warmup_runs << ","
         << "\"measured_runs\":" << measured_runs << ","
         << "\"num_options\":" << result.num_options << ","
