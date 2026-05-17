@@ -11,6 +11,7 @@
 
 int main(int argc, char* argv[]) {
     std::size_t num_workers = 8;
+    int steps = 1000;
 
     for (int i = 1; i < argc; i++) {
         if (std::string(argv[i]) == "--num_workers" && i + 1 < argc) {
@@ -19,9 +20,16 @@ int main(int argc, char* argv[]) {
             } catch (const std::invalid_argument& e) {
                 std::cerr << "--num_workers must be an integer\n";
                 return 1;
-            } 
+            }
+        } else if (std::string(argv[i]) == "--steps" && i + 1 < argc) {
+            try {
+                steps = std::stoi(argv[++i]);
+            } catch (const std::invalid_argument& e) {
+                std::cerr << "--steps must be an integer\n";
+                return 1;
+            }
         } else {
-            std::cerr << "Usage: " << argv[0] << " [--num_workers <N>]" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " [--num_workers <N>] [--steps <N>]" << std::endl;
             return 1;
         }
     }
@@ -43,7 +51,6 @@ int main(int argc, char* argv[]) {
     // get option chains
     std::vector<Option> options = make_sample_option_chain("small");
 
-    int steps = 1000;
     int warmup_runs = 3;
     int measured_runs = 10;
 
