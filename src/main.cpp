@@ -16,7 +16,7 @@
 
 int main(int argc, char* argv[]) {
     std::size_t num_workers = 8;
-    int steps = 1000;
+    int steps = 500;
     std::string output_dir = "data/";
     std::string size = "small";
     std::size_t num_options = 0; // dummy value. will be populated by command line argument if used. will be casted to size_t in helper function
@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 
 
     // get option chains
-    std::vector<Option> options = provided_size ? make_sample_option_chain(size) : make_sample_option_chain(num_options);
+    std::vector<Option> options = provided_size || num_options == 0 ? make_sample_option_chain(size) : make_sample_option_chain(num_options);
 
     int warmup_runs = 3;
     int measured_runs = 10;
