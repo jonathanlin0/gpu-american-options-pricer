@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <cassert>
 
 #include "benchmark/sample_options.hpp"
 #include "benchmark/benchmark_runner.hpp"
@@ -18,13 +19,16 @@ int main(int argc, char* argv[]) {
     int steps = 1000;
     std::string output_dir = "data/";
     std::string size = "small";
+    std::size_t num_options = 0; // dummy value. will be populated by command line argument if used. will be casted to size_t in helper function
+
+    bool provided_size = false;
 
     for (int i = 1; i < argc; i++) {
         if (std::string(argv[i]) == "--num-workers" && i + 1 < argc) {
             try {
                 num_workers = std::stoul(argv[++i]);
             } catch (const std::invalid_argument& e) {
-                std::cerr << "--num-workers must be an integer\n";
+                std::cerr << "--num-workers must be a positive integer\n";
                 return 1;
             }
         } else if (std::string(argv[i]) == "--steps" && i + 1 < argc) {
@@ -36,6 +40,15 @@ int main(int argc, char* argv[]) {
             }
         } else if (std::string(argv[i]) == "--size" && i + 1 < argc) {
             size = argv[++i];
+            provided_size = true;
+        } else if (std::string(argv[i]) == "--num-options" && i + 1 < argc) {
+            try {
+                num_options = std::stoul(argv[++i]);
+                assert(num_options > 0);
+            } catch (const std::invalid_argument& e) {
+                std::cerr << "--num-options must be a positive integer\n";
+                return 1;
+            }
         } else if (std::string(argv[i]) == "--output-dir" && i + 1 < argc) {
             output_dir = argv[++i];
         } else {
@@ -77,7 +90,7 @@ int main(int argc, char* argv[]) {
 
 
     // get option chains
-    std::vector<Option> options = make_sample_option_chain(size);
+    std::vector<Option> options = provided_size ? make_sample_option_chain(size) : make_sample_option_chain(num_options);
 
     int warmup_runs = 3;
     int measured_runs = 10;
