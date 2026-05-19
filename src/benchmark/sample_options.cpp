@@ -10,9 +10,9 @@ namespace {
     };
 
     const std::unordered_map<std::string, SampleOptionChainConfig> SAMPLE_OPTION_CHAIN_CONFIGS = {
-        { "small", { 1000 } },
-        { "medium", { 10000 } },
-        { "large", { 100000 } },
+        { "small", { 10000 } },
+        { "medium", { 100000 } },
+        { "large", { 1000000 } },
     };
 }
 
