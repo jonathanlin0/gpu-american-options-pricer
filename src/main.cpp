@@ -70,8 +70,13 @@ int main(int argc, char* argv[]) {
     std::cout << "num_workers: " << num_workers << std::endl;
     std::cout << "steps: " << steps << std::endl;
     std::cout << "output_dir: " << output_dir << std::endl;
-    std::cout << "size: " << size << std::endl;
-
+    if (provided_size) {
+        std::cout << "size: " << size << std::endl;
+    }
+    else {
+        std::cout << "num_options: " << num_options << std::endl;
+    }
+    
     // create output dir if it doesn't exist yet
     std::filesystem::create_directories(output_dir);
 
