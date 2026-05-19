@@ -3,3 +3,6 @@ build/
 
 # experiment outcomes
 data/
+
+# pycache
+__pycache__/
