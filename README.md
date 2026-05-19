@@ -2,7 +2,14 @@
 
 ## Installation and Usage
 
-From the repo root:
+Required:
+- CMake 3.20+
+- A C++17 compiler supported by CUDA
+- NVIDIA CUDA Toolkit, including `nvcc`
+- An NVIDIA GPU with a compatible driver
+- A build tool supported by CMake
+
+From the repo root (on Linux computer):
 ```
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
@@ -40,4 +47,4 @@ TODO: figure that shows effect of number of different option chains on performan
 
 ## Potential Improvements
 - check runtime and accuracy performance from using double instead of floats
-- include divident payments in the pricing engine
+- include dividend payments in the pricing engine
