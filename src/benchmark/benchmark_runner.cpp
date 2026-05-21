@@ -56,6 +56,7 @@ BenchmarkResult BenchmarkRunner::run(
     cout << "Finished warmup" << endl;
 
     // timed runs
+    // TODO: maybe in future run all the cpu batches first, then run all the gpu batches for more realistic steady state perf
     vector<float> cpu_times_ms;
     vector<float> gpu_times_ms;
     cout << "Starting timed batch runs..." << endl;
