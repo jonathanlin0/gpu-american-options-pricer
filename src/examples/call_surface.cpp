@@ -54,8 +54,8 @@ int main(int argc, char* argv[]) {
 
     constexpr float min_expiry = 1;
     constexpr float max_expiry = 100;
-    constexpr float min_strike = 0.8;
-    constexpr float max_strike = 1.2;
+    constexpr float min_strike = 50;
+    constexpr float max_strike = 200;
 
     std::vector<Option> options;
     for (
