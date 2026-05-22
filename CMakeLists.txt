@@ -19,7 +19,18 @@ add_executable(options_pricer
 
 target_include_directories(options_pricer PRIVATE src)
 
+add_executable(call_surface
+    src/examples/call_surface.cpp
+    src/pricing/gpu_pricer.cu
+)
+
+target_include_directories(call_surface PRIVATE src)
+
 # some flags for useful compiler warnings
 target_compile_options(options_pricer PRIVATE
+    $<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wpedantic>
+)
+
+target_compile_options(call_surface PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wpedantic>
 )
