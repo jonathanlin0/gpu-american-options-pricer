@@ -42,7 +42,16 @@ For a single equity option, the cartesian product of expiration dates and strike
 
 ### Performance Analysis (CPU vs GPU)
 
-TODO: figure that shows effect of granularity in binomial model on performance
+#### Runtime vs Binomial Steps
+![CPU vs GPU batch time by binomial steps](figs/steps_graph.png)
+
+The CPU and GPU runtimes w.r.t. the number of binomial steps. The higher the number of steps, the more accurate the option price estimation is. the CPU runtime is exponential because for each additional layer in the binomial lattice structure, a $t+1$ length array is added. Thus, you must do $t+1$ more calculations (for the final layer payoffs) and $t$ more calculations for the additional layer of backward induction. The GPU runtime remains linear, because all the threads are able to do the initial payoff calculations and the subsequent backward induction calculation in parallel. So for CPU, $O(t)$ runtime is added, while only $O(1)$ runtime is added for GPU. This Figure generated with [`scripts/graph_steps.py`](scripts/graph_steps.py).
+
+#### Runtime vs Number of Options
+![CPU vs GPU batch time by number of options](figs/num_options_graph.png)
+
+The CPU and GPU runtimes w.r.t. the number of option to price are both $O(n)$. But the GPU just has a lot better parallelization, so the amount of time required to calculate the price of a single option is a lot lower. This mainly comes from the backward induction GPU speedup.
+
 TODO: figure that shows effect of number of different option chains on performance
 
 ## Potential Improvements
