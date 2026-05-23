@@ -28,15 +28,47 @@ For a single equity option, the cartesian product of expiration dates and strike
 
 ## Methodology
 
+![Underlying Stock Prices Tree](figs/possible_underlying_stock_prices.png)
+This project uses the binomial tree lattice method to price American options. We define the following
+- $T$: Total time
+- $N$: Number of steps between now and time $T$
+- $dt = T / N$: The timestep
+- $u = e^{\sigma \cdot \sqrt{dt}}$: TODO (up multiplier)
+- $d = e^{-\sigma \cdot \sqrt{dt}}$: TODO (down multiplier)
+- $q = (exp(r \cdot dt) - d) / (u - d)$: The risk-neutral up probability
+
 ### Assumptions
 - No dividends
-- Lognormal stock-price dynamics: the log price moves up or down by $\pm \sigma \sqrt{\delta t}$
+- Constant vol
+- Constant risk-free rate
+- Markets are frictionless: no transaction costs, no bid/ask spread, no taxes, no short-selling restrictions, trades are instant, etc
+- Markets are arbitrage-free: there is no strategy that gives you guaranteed profit with no risk and no net cost
+
+The underyling price movies multiplicatively and approximates geometric Brownian motion. So, over a small timestep $dt$, log-price volatility scales like $\sigma \cdot sqrt{dt}$. Log-price volatility means that the volatility is measured in log returns $\log(S_{next} / S_{now})$, rather than just $S_{next} / S_{now}$. The result of the log return is equal to the rate if the interest was compounded continuously where $S_{next} = S_{now} \cdot e^{\text{log price volatility}}$. This model is also a simplified two-point approximation with moves at $+\sigma \cdot sqrt{dt}$ and $-\sigma \cdot sqrt{dt}$.
+
+Thus, the up log-return is $+ \sigma \cdot \sqrt{dt}$, while the down log-return is $- \sigma \cdot \sqrt{dt}$. Since they're reciprocals and the returns are multiplicative, and (up and down) or (down and up) results in the original price.
+
+$q$ is the chance that the stock price goes up, while $1-q$ is the chance that the stock price goes down. We assume that there's no way to make a risk-free profit with zero net investment. Thus, the expected stock growth over one step must equal the risk-free growth. Proof to calculate $q$.
+- $E[S_{next}] = S_0 e^{r \cdot dt}$ <- risk free rate growth
+- $E[S_{next}] = q S_0 u + (1-q) S_0 d$ <- binomial tree structure
+- $S e^{r \cdot dt} = q S_0 u + (1-q) S_0 d$
+- $e^{r \cdot dt} = q u + (1-q) d$ <- cancel $S_0$
+- $q = \frac{e^{r \cdot dt} -d}{u - d}$ <- some algebra to solve for $q$
+
+### Continuation vs Exercise
+Now, we can find the following
+- Continuation value = $e^{-r \cdot dt} (q \cdot S_0 \cdot u + (1-q) \cdot S_0 \cdot d)$
+- Exercise value = $max(S - K, 0)$ for calls and $max(K - S, 0)$ for puts
+
+So, we value the option as the max of continuation vs exercise value.
 
 ## Project Features
 
 - GPU-based FV options pricer
 - CPU-based FV options pricer
 - Tests to ensure cpu and gpu correctness in `src/tests/`
+- Scripts to plot the runtime w.r.t. the number of binomial steps and the number of options
+- Example script to plot example call surface
 
 ## Results
 
@@ -54,8 +86,6 @@ The main speedup from GPU comes from backwards induction. So, I wanted to isolat
 ![CPU vs GPU batch time by number of options](figs/num_options_graph.png)
 
 The CPU and GPU runtimes w.r.t. the number of option to price are both $O(n)$. But the GPU just has a lot better parallelization, so the amount of time required to calculate the price of a single option is a lot lower. This mainly comes from the backward induction GPU speedup.
-
-TODO: figure that shows effect of number of different option chains on performance
 
 ## Potential Improvements
 - check runtime and accuracy performance from using double instead of floats
