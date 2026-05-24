@@ -12,8 +12,8 @@
 int main(int argc, char* argv[]) {
 
     std::string output_dir = "data/";
-    std::size_t num_expiries = 100;
-    std::size_t num_strikes = 100;
+    std::size_t num_expiries = 200;
+    std::size_t num_strikes = 200;
     int num_steps = 500;
 
     for (int i = 1; i < argc; i++) {
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
     constexpr float min_expiry = 1;
     constexpr float max_expiry = 100;
     constexpr float min_strike = 50;
-    constexpr float max_strike = 200;
+    constexpr float max_strike = 1000;
 
     std::vector<Option> options;
     for (
