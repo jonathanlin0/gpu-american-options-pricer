@@ -62,6 +62,11 @@ Now, we can find the following
 
 So, we value the option as the max of continuation vs exercise value.
 
+### GPU Implementation
+
+![GPU Payoff array structure](figs/gpu_array_structure.png)
+The kernel launches 1 block per option to price. Then, each thread $i$ calculates the payoff at index $i$ for each timestep, starting at timestep $t_n$ to the current price $t_0$. The array at time $t_j$ is sorted by the net number of underlying "up" movements, from lowest to highest. So, thread $i$ can calculate the payoff from if the underlying goes up ($arr_{j+1}[i+1]$) or if the underlying does down ($arr_{j+1}[i]$). As the main loop progresses and timestep $t_j$ approaches $t_0$, the total number of active threads decreases. But this is fine, because fundamentally the induction process is a serial operation, which a GPU cannot speedup. Thus, the calculations at each timestep are parallelized, and the operation of calculating each given option price is parallelized. Kernel is found at [src/pricing/gpu_pricer.cu](src/pricing/gpu_pricer.cu)
+
 ## Project Features
 
 - GPU-based FV options pricer
