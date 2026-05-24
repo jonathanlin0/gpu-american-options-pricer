@@ -94,6 +94,19 @@ The CPU and GPU runtimes w.r.t. the number of option to price are both $O(n)$. B
 
 ## Sanity Check
 
+Run:
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+./build/call_surface
+
+python scripts/graph_call_surface.py
+```
+
+![Call Surface](figs/call_surface_graph.png)
+
+For a sanity check, I wanted to see if the surface of the price of a call option chain matched what should be expected. This relationship matches expectations. As the expiration date increases, the price of the option goes up. As the strike price increases, the price goes down.
+
 ## Potential Improvements
 - check runtime and accuracy performance from using double instead of floats
 - include dividend payments in the pricing engine

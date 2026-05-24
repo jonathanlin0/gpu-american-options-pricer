@@ -44,6 +44,9 @@ def plot_call_surface() -> None:
     axes.set_xlabel("Expiry")
     axes.set_ylabel("Strike price")
     axes.set_zlabel("Call price")
+    axes.set_xlim(min(expiries), max(expiries))
+    axes.set_ylim(min(strikes), max(strikes))
+    axes.view_init(elev=28, azim=135)
     figure.colorbar(surface, ax=axes, shrink=0.65, pad=0.1, label="Call price")
     figure.tight_layout()
 
