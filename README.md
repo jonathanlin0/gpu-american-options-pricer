@@ -8,6 +8,7 @@ Required:
 - NVIDIA CUDA Toolkit, including `nvcc`
 - An NVIDIA GPU with a compatible driver
 - A build tool supported by CMake
+- Internet connection to pull gtest framework
 
 From the repo root (on Linux computer):
 ```
@@ -71,9 +72,38 @@ The kernel launches 1 block per option to price. Then, each thread $i$ calculate
 
 - GPU-based FV options pricer
 - CPU-based FV options pricer
-- Tests to ensure cpu and gpu correctness in `src/tests/`
+- Tests to ensure general financial properties and cpu/gpu correctness in `src/tests/`
 - Scripts to plot the runtime w.r.t. the number of binomial steps and the number of options
 - Example script to plot example call surface
+
+## Tests
+
+The test suite in `src/tests/` uses GoogleTest to check financial properties that should hold for both the CPU and GPU pricers:
+- CPU and GPU prices match within a small floating-point tolerance
+- call prices increase as spot increases
+- put prices decrease as spot increases
+- call prices decrease as strike increases
+- put prices increase as strike increases
+- prices are non-negative and at least intrinsic value
+- prices increase with volatility
+- prices increase with maturity
+
+Install GoogleTest with:
+```
+sudo apt install libgtest-dev
+```
+
+Run all tests with CTest:
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
+
+Or run the test executable directly:
+```
+./build/pricer_tests --gtest_color=yes
+```
 
 ## Results
 
