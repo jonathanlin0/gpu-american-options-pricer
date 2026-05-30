@@ -25,7 +25,7 @@ void price_kernel(
      * then, step steps are done to get the final price
      * all this is done in shared memory. optimal cause threads only care about data within the block, and not across blocks.
      *
-     * the cpu method modified payoffs in place. we can't do that cause we have no guarantee of warp executation order. thus, we'll use
+     * the cpu method modified payoffs in place. the cuda kernel can't do that cause we have no guarantee of warp executation order. thus, we'll use
      * ping-pong buffering. two buffers - old_payoffs and new_payoffs. this'll prevent the likely data corruption that'll come
      * with threads modifying values in place that other threads in other warps may be dependent on.
     */
