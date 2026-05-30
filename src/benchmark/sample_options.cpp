@@ -10,6 +10,7 @@ namespace {
     };
 
     const std::unordered_map<std::string, SampleOptionChainConfig> SAMPLE_OPTION_CHAIN_CONFIGS = {
+        { "extra-small", {1000} },
         { "small", { 10000 } },
         { "medium", { 100000 } },
         { "large", { 1000000 } },
@@ -66,7 +67,7 @@ std::vector<Option> make_sample_option_chain(const std::size_t num_options) {
 std::vector<Option> make_sample_option_chain(const std::string& size) {
     auto config_it = SAMPLE_OPTION_CHAIN_CONFIGS.find(size);
     if (config_it == SAMPLE_OPTION_CHAIN_CONFIGS.end()) {
-        throw std::invalid_argument("size must be 'small', 'medium', or 'large'");
+        throw std::invalid_argument("size must be 'extra-small', 'small', 'medium', or 'large'");
     }
     std::size_t num_options = config_it->second.num_option_chains;
     return make_sample_option_chain(num_options);

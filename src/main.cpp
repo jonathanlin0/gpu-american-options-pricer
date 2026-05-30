@@ -15,10 +15,10 @@
 #include "pricing/cpu_pricer.hpp"
 
 int main(int argc, char* argv[]) {
-    std::size_t num_workers = 8;
+    std::size_t num_workers = 12;
     int steps = 500;
     std::string output_dir = "data/";
-    std::string size = "small";
+    std::string size = "extra-small";
     std::size_t num_options = 0; // dummy value. will be populated by command line argument if used. will be casted to size_t in helper function
 
     bool provided_size = false;
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Number of options per step: " << result.num_options << std::endl;
     std::cout << "Steps: " << result.steps << std::endl;
-    std::cout << "Speedup: gpu is " << result.avg_gpu_speedup << "x speed of cpu" << std::endl;
+    std::cout << "Speedup: gpu is " << result.avg_gpu_speedup << "x " << (result.avg_gpu_speedup > 1 ? "faster" : "slower") << " than cpu" << std::endl;
     std::cout << std::endl;
     std::cout << "CPU mean time per option (ms): " << result.cpu_time_per_option_price_ms << std::endl;
     std::cout << "CPU step mean time (ms): " << result.cpu_batch_mean_time_ms << std::endl;
