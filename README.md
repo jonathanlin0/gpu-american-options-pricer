@@ -10,6 +10,8 @@ Required:
 - A build tool supported by CMake
 - Internet connection to pull gtest framework
 
+A single executable runs both the cpu and gpu implementations. Then, the same script checks the GPU's correctness against the CPU's outputs.
+
 From the repo root (on Linux computer):
 ```
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -34,8 +36,8 @@ This project uses the binomial tree lattice method to price American options. We
 - $T$: Total time
 - $N$: Number of steps between now and time $T$
 - $dt = T / N$: The timestep
-- $u = e^{\sigma \cdot \sqrt{dt}}$: TODO (up multiplier)
-- $d = e^{-\sigma \cdot \sqrt{dt}}$: TODO (down multiplier)
+- $u = e^{\sigma \cdot \sqrt{dt}}$: the up multiplier for the underlying price over one timestep
+- $d = e^{-\sigma \cdot \sqrt{dt}}$: the down multiplier for the underlying price over one timestep
 - $q = (exp(r \cdot dt) - d) / (u - d)$: The risk-neutral up probability
 
 ### Assumptions
