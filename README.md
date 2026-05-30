@@ -114,13 +114,17 @@ Or run the test executable directly:
 
 The CPU and GPU runtimes w.r.t. the number of binomial steps. The higher the number of steps, the more accurate the option price estimation is. the CPU runtime is exponential because for each additional layer in the binomial lattice structure, a $t+1$ length array is added. Thus, you must do $t+1$ more calculations (for the final layer payoffs) and $t$ more calculations for the additional layer of backward induction. The GPU runtime remains linear, because all the threads are able to do the initial payoff calculations and the subsequent backward induction calculation in parallel. So for CPU, $O(t)$ runtime is added, while only $O(1)$ runtime is added for GPU. This figure generated with [`scripts/graph_steps.py`](scripts/graph_steps.py).
 
+Example experiments for this figure found at [`scripts/step_script.sh`](scripts/step_script.sh). The script for generating this figure assumes size = `medium`. 
+
 ![CPU vs GPU batch time by binomial steps with 1 option](figs/steps_1_option_graph.png)
-The main speedup from GPU comes from backwards induction. So, I wanted to isolate the speedup of just pricing 1 option, but we change the number of steps. This also gets rid of the GPU parallelization from running multiple blocks simultaneously (1 block is launched per option). With my current CPU and GPU setup, the breakpoint is at about 425 steps. For each step value, 10 experiments were run. The shaded areas around the lines are the standard deviation for each point. This figure generated with [`scripts/graph_steps_1_option.py`](scripts/graph_steps_1_option.py).
+The main speedup from GPU comes from backwards induction. So, I wanted to isolate the speedup of just pricing 1 option, but we change the number of steps. This also gets rid of the GPU parallelization advantage from running multiple blocks simultaneously (1 block is launched per option). With my current CPU and GPU setup, the breakpoint is at about 425 steps. For each step value, 10 experiments were run. The shaded areas around the lines are the standard deviation for each point. This figure generated with [`scripts/graph_steps_1_option.py`](scripts/graph_steps_1_option.py).
 
 #### Runtime vs Number of Options
 ![CPU vs GPU batch time by number of options](figs/num_options_graph.png)
 
 The CPU and GPU runtimes w.r.t. the number of option to price are both $O(n)$. But the GPU just has a lot better parallelization, so the amount of time required to calculate the price of a single option is a lot lower. This mainly comes from the backward induction GPU speedup. This figure generated with [`scripts/graph_num_options.py`](scripts/graph_num_options.py).
+
+Example experiments for this figure found at [`scripts/num_options_script.sh`](scripts/num_options_script.sh). The script for generating this figure assumes steps = `500`. 
 
 ## Sanity Check
 

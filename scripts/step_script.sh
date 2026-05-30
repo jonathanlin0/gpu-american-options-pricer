@@ -1,0 +1,13 @@
+./build/options_pricer --num-workers 20 --size medium --steps 200
+./build/options_pricer --num-workers 20 --size medium --steps 300
+./build/options_pricer --num-workers 20 --size medium --steps 400
+./build/options_pricer --num-workers 20 --size medium --steps 500
+./build/options_pricer --num-workers 20 --size medium --steps 600
+./build/options_pricer --num-workers 20 --size medium --steps 700
+./build/options_pricer --num-workers 20 --size medium --steps 800
+./build/options_pricer --num-workers 20 --size medium --steps 900
+./build/options_pricer --num-workers 20 --size medium --steps 1000
+./build/options_pricer --num-workers 20 --size medium --steps 1200
+./build/options_pricer --num-workers 20 --size medium --steps 1300
+./build/options_pricer --num-workers 20 --size medium --steps 1400
+./build/options_pricer --num-workers 20 --size medium --steps 1500

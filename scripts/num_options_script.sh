@@ -1,0 +1,13 @@
+./build/options_pricer --num-workers 20 --steps 500 --num-options 250
+./build/options_pricer --num-workers 20 --steps 500 --num-options 500
+./build/options_pricer --num-workers 20 --steps 500 --num-options 1000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 2000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 4000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 8000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 16000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 32000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 64000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 128000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 256000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 512000
+./build/options_pricer --num-workers 20 --steps 500 --num-options 1024000
