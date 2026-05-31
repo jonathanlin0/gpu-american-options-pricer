@@ -64,7 +64,7 @@ Thus, the up log-return is $+ \sigma \cdot \sqrt{dt}$, while the down log-return
 $q$ is the chance that the stock price goes up, while $1-q$ is the chance that the stock price goes down. We assume that there's no way to make a risk-free profit with zero net investment. Thus, the expected stock growth over one step must equal the risk-free growth. Proof to calculate $q$.
 - $E[S_{next}] = S_0 e^{r \cdot dt}$ <- risk free rate growth
 - $E[S_{next}] = q S_0 u + (1-q) S_0 d$ <- binomial tree structure
-- $S e^{r \cdot dt} = q S_0 u + (1-q) S_0 d$
+- $S_0 e^{r \cdot dt} = q S_0 u + (1-q) S_0 d$
 - $e^{r \cdot dt} = q u + (1-q) d$ <- cancel $S_0$
 - $q = \frac{e^{r \cdot dt} -d}{u - d}$ <- some algebra to solve for $q$
 
