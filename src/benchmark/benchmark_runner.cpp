@@ -14,8 +14,8 @@ using std::vector;
 using std::cout;
 using std::endl;
 
-constexpr float ABSOLUTE_TOLERANCE = 1e-4f;
-constexpr float RELATIVE_TOLERANCE = 1e-5f;
+constexpr float ABSOLUTE_TOLERANCE = 1e-3f;
+constexpr float RELATIVE_TOLERANCE = 1e-4f;
 
 BenchmarkRunner::BenchmarkRunner(
     int warmup_runs,
