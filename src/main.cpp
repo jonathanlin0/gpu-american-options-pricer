@@ -15,7 +15,7 @@
 #include "pricing/cpu_pricer.hpp"
 
 int main(int argc, char* argv[]) {
-    std::size_t num_workers = 12;
+    std::size_t num_workers = 4;
     int steps = 500;
     std::string output_dir = "data/";
     std::string size = "extra-small";
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
         } else if (std::string(argv[i]) == "--size" && i + 1 < argc) {
             size = argv[++i];
             provided_size = true;
-        } else if (std::string(argv[i]) == "--num-options" && i + 1 < argc) {
+        } else if (std::string(argv[i]) == "--num-options" && i + 1 < argc) { // overrides steps, if num-options is provided
             try {
                 num_options = std::stoul(argv[++i]);
                 assert(num_options > 0);
