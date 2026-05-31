@@ -120,9 +120,9 @@ Or run the test executable directly:
 #### Runtime vs Binomial Steps
 ![CPU vs GPU batch time by binomial steps](figs/steps_graph.png)
 
-The CPU and GPU runtimes w.r.t. the number of binomial steps. The higher the number of steps, the more accurate the option price estimation is. The CPU runtime is exponential because for each additional layer in the binomial lattice structure, a $t+1$ length array is added. So, layer $t$ has to do $O(t)$ more calculations than before for the additional step of backward induction, adding $O(t)$ to the runtime. The GPU runtime remains linear, because all the threads in the given block are able to do the additional backward induction calculation in parallel. So for CPU, $O(t)$ runtime is added, while only $O(1)$ runtime is added for GPU. This figure generated with [`scripts/graph_steps.py`](scripts/graph_steps.py).
+The CPU and GPU runtimes w.r.t. the number of binomial steps. The higher the number of steps, the more accurate the option price estimation is. The CPU runtime is polynomial because for each additional layer in the binomial lattice structure, a $t+1$ length array is added. So, layer $t$ has to do $O(t)$ more calculations than before for the additional step of backward induction, adding $O(t)$ to the runtime. The GPU runtime remains linear, because all the threads in the given block are able to do the additional backward induction calculation in parallel. So for CPU, $O(t)$ runtime is added, while only $O(1)$ runtime is added for GPU. This figure generated with [`scripts/graph_steps.py`](scripts/graph_steps.py).
 
-Since the runtime is exponential for the CPU implementation and linear for the GPU implementation, the GPU implementation is obviously many times faster than the CPU implementation, assuming the number of steps is large.
+Since the runtime is exponential for the CPU implementation and linear for the GPU implementation, the GPU implementation is obviously many times faster than the CPU implementation, assuming the number of steps is large. CPU is $O(n^2)$ while GPU is $O(n)$.
 
 Example experiments for this figure found at [`scripts/step_script.sh`](scripts/step_script.sh). The script for generating this figure assumes size = `medium`. 
 
