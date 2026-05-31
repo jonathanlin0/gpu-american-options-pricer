@@ -15,48 +15,48 @@ CpuPricer::CpuPricer(size_t num_threads) : num_threads_(num_threads) {
 
 namespace {
     float price_one_option(const Option& option, int steps) {
-        float delta_t = option.maturity_years / steps;
-        float u = expf(option.vol_annualized * sqrtf(delta_t));
-        float d = expf(-option.vol_annualized * sqrtf(delta_t));
-        float r = option.risk_free_rate_annualized;
-        float q = (expf(r * delta_t) - d) / (u - d); // risk-neutral chance of stock going up
+        double delta_t = static_cast<double>(option.maturity_years) / steps;
+        double u = std::exp(static_cast<double>(option.vol_annualized) * std::sqrt(delta_t));
+        double d = std::exp(-static_cast<double>(option.vol_annualized) * std::sqrt(delta_t));
+        double r = option.risk_free_rate_annualized;
+        double q = (std::exp(r * delta_t) - d) / (u - d); // risk-neutral chance of stock going up
 
         // fill out payoffs for end state at time option.maturity_years
         // payoffs[i] is payoff with i net "ups"
-        vector<float> payoffs(steps + 1);
+        vector<double> payoffs(steps + 1);
         for (int i = 0; i < steps + 1; i++) {
-            float new_price = powf(u, i) * powf(d, steps - i) * option.spot;
+            double new_price = std::pow(u, i) * std::pow(d, steps - i) * option.spot;
             if (option.option_type == OptionType::Call) {
-                payoffs[i] = fmaxf(new_price - option.strike, 0.0f);
+                payoffs[i] = std::fmax(new_price - option.strike, 0.0);
             } else {
-                payoffs[i] = fmaxf(option.strike - new_price, 0.0f);
+                payoffs[i] = std::fmax(option.strike - new_price, 0.0);
             }
         }
 
         // backward induction
         for (int t = steps - 1; t >= 0; t--) {
             for (int i = 0; i <= t; i++) {
-                float current_spot = option.spot * powf(u, i) * powf(d, t-i);
+                double current_spot = option.spot * std::pow(u, i) * std::pow(d, t-i);
 
                 // value if the option is exercised now
-                float curr_exercise_value;
+                double curr_exercise_value;
                 if (option.option_type == OptionType::Call) {
-                    curr_exercise_value = fmaxf(current_spot - option.strike, 0.0f);
+                    curr_exercise_value = std::fmax(current_spot - option.strike, 0.0);
                 } else {
-                    curr_exercise_value = fmaxf(option.strike - current_spot, 0.0f);
+                    curr_exercise_value = std::fmax(option.strike - current_spot, 0.0);
                 }
 
                 // EV of next step, discounted by risk free rate r
-                float continuation_value = expf(-r * delta_t) * (q * payoffs[i+1] + (1-q) * payoffs[i]);
+                double continuation_value = std::exp(-r * delta_t) * (q * payoffs[i+1] + (1-q) * payoffs[i]);
 
-                payoffs[i] = fmaxf(
+                payoffs[i] = std::fmax(
                     curr_exercise_value,
                     continuation_value
                 );
             }
         }
 
-        return payoffs[0];
+        return static_cast<float>(payoffs[0]);
     }
 }
 
@@ -65,6 +65,9 @@ vector<float> CpuPricer::price(
     const vector<Option>& options,
     int steps
 ) const {
+    if (steps <= 0) {
+        throw std::invalid_argument("steps must be positive");
+    }
 
     vector<float> prices(options.size());
 
