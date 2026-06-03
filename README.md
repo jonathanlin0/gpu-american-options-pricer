@@ -12,7 +12,7 @@ Required:
 - Internet connection to pull gtest framework
 
 ### Usage
-A single executable runs both the cpu and gpu implementations. Then, the same script checks the GPU's correctness against the CPU's outputs.
+A single executable runs both the CPU and GPU implementations. Then, the same script checks the GPU's correctness against the CPU's outputs. There are separate tests to ensure calculation correctness. So assuming those separate correctness tests pass, equal results from the CPU and GPU calculations imply that both calculation methods are correct.
 
 From the repo root (on Linux computer):
 ```
