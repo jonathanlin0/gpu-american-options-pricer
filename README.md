@@ -40,13 +40,14 @@ American options can be exercised at any moment before the expiration date, whil
 For a single equity option, the cartesian product of expiration dates and strike prices is extremely large. Thus, the high parallelism of GPUs can accelerate FV calculations across an entire option chain and across different chains much faster than CPU-based programs.
 
 ### GPU Implementation
+The main CUDA kernel is found at [src/pricing/gpu_pricer.cu](src/pricing/gpu_pricer.cu)
 
 ![GPU Payoff array structure](figs/gpu_array_structure.png)
 Since the value of an option at time $t_j$ depends on its possible values at $t_{j+1}$, this method is a backwards induction.
 
 The kernel launches 1 block per option to price. Then, each thread $i$ calculates the payoff at index $i$ for the given timestep, starting at timestep $t_n$ to the current price $t_0$. The array at time $t_j$ is sorted by the net number of underlying "up" movements, from lowest to highest. So, thread $i$ can calculate the payoff from if the underlying goes up ($arr_{j+1}[i+1]$) or if the underlying does down ($arr_{j+1}[i]$). This is demonstrated by the blue and red arrows above. The blue corresponds with the price if the underlying went up, and the red corresponds with the price if the underlying went down. As the main loop progresses and timestep $t_j$ approaches $t_0$, the total number of active threads decreases. But this is fine, because fundamentally the induction process is a serial operation, which a GPU cannot speedup. Each layer of calculation depends on the previous layer. 
 
-The calculations of the array at each timestep are still parallelized, so there's still a lot of speedup from using a GPU. And the entire operations of calculating the options are parallelized, with a block launching for each option to price. The CUDA kernel is found at [src/pricing/gpu_pricer.cu](src/pricing/gpu_pricer.cu)
+The calculations of the array at each timestep are still parallelized, so there's still a lot of speedup from using a GPU. And the entire operations of calculating the options are parallelized, with a block launching for each option to price.
 
 ## Tests
 
