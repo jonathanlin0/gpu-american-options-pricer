@@ -31,49 +31,13 @@ cmake --build build -j
 
 ## Project Description
 
-This project prices the fair value (FV) of American options using the binomial model.
+This project prices the fair value (FV) of American options using the binomial lattice model.
 
 ### Technical Challenges
 
 American options can be exercised at any moment before the expiration date, while European options can only be exercised at the expiry. Thus, we're unable to use the Black-Scholes model to easily calculate FVs of American options. Instead, we must use a binomial model to recursively price the original option. This lattice structure can be parallelized on a GPU for performance improvements.
 
 For a single equity option, the cartesian product of expiration dates and strike prices is extremely large. Thus, the high parallelism of GPUs can accelerate FV calculations across an entire option chain and across different chains much faster than CPU-based programs.
-
-## Methodology
-
-![Underlying Stock Prices Tree](figs/possible_underlying_stock_prices.png)
-This project uses the binomial tree lattice method to price American options. We define the following
-- $T$: Total time
-- $N$: Number of steps between now and time $T$
-- $dt = T / N$: The timestep
-- $u = e^{\sigma \cdot \sqrt{dt}}$: the up multiplier for the underlying price over one timestep
-- $d = e^{-\sigma \cdot \sqrt{dt}}$: the down multiplier for the underlying price over one timestep
-- $q = (exp(r \cdot dt) - d) / (u - d)$: The risk-neutral up probability (proven below)
-
-### Assumptions
-- No dividends
-- Constant vol
-- Constant risk-free rate
-- Markets are frictionless: no transaction costs, no bid/ask spread, no taxes, no short-selling restrictions, trades are instant, etc
-- Markets are arbitrage-free: there is no strategy that gives you guaranteed profit with no risk and no net cost
-
-The underyling price movies multiplicatively and approximates geometric Brownian motion. So, over a small timestep $dt$, log-price volatility scales like $\sigma \cdot \sqrt{dt}$. Log-price volatility means that the volatility is measured in log returns $\log(S_{next} / S_{now})$, rather than just $S_{next} / S_{now}$. The result of the log return is equal to the rate if the interest was compounded continuously where $S_{next} = S_{now} \cdot e^{\text{log price volatility}}$. This model is also a simplified two-point approximation with moves at $+\sigma \cdot \sqrt{dt}$ and $-\sigma \cdot \sqrt{dt}$.
-
-Thus, the up log-return is $+ \sigma \cdot \sqrt{dt}$, while the down log-return is $- \sigma \cdot \sqrt{dt}$. Since they're reciprocals and the returns are multiplicative, and (up and down) or (down and up) results in the original price.
-
-$q$ is the chance that the stock price goes up, while $1-q$ is the chance that the stock price goes down. We assume that there's no way to make a risk-free profit with zero net investment. Thus, the expected stock growth over one step must equal the risk-free growth. Proof to calculate $q$.
-- $E[S_{next}] = S_0 e^{r \cdot dt}$ <- risk free rate growth
-- $E[S_{next}] = q S_0 u + (1-q) S_0 d$ <- binomial tree structure
-- $S_0 e^{r \cdot dt} = q S_0 u + (1-q) S_0 d$
-- $e^{r \cdot dt} = q u + (1-q) d$ <- cancel $S_0$
-- $q = \frac{e^{r \cdot dt} -d}{u - d}$ <- some algebra to solve for $q$
-
-### Continuation vs Exercise
-Now, we can find the following
-- Continuation value = $e^{-r \cdot dt} (q \cdot S_0 \cdot u + (1-q) \cdot S_0 \cdot d)$
-- Exercise value = $max(S - K, 0)$ for calls and $max(K - S, 0)$ for puts
-
-So, we value the option as the max of continuation vs exercise value.
 
 ### GPU Implementation
 
@@ -152,6 +116,42 @@ python scripts/graph_call_surface.py
 ![Call Surface](figs/call_surface_graph.png)
 
 For a sanity check, I wanted to see if the surface of the price of a call option chain matched what should be expected. This relationship matches expectations. As the expiration date increases, the price of the option goes up. As the strike price increases, the price goes down.
+
+## Methodology
+
+![Underlying Stock Prices Tree](figs/possible_underlying_stock_prices.png)
+This project uses the binomial tree lattice method to price American options. We define the following
+- $T$: Total time
+- $N$: Number of steps between now and time $T$
+- $dt = T / N$: The timestep
+- $u = e^{\sigma \cdot \sqrt{dt}}$: the up multiplier for the underlying price over one timestep
+- $d = e^{-\sigma \cdot \sqrt{dt}}$: the down multiplier for the underlying price over one timestep
+- $q = (exp(r \cdot dt) - d) / (u - d)$: The risk-neutral up probability (proven below)
+
+### Assumptions
+- No dividends
+- Constant vol
+- Constant risk-free rate
+- Markets are frictionless: no transaction costs, no bid/ask spread, no taxes, no short-selling restrictions, trades are instant, etc
+- Markets are arbitrage-free: there is no strategy that gives you guaranteed profit with no risk and no net cost
+
+The underyling price movies multiplicatively and approximates geometric Brownian motion. So, over a small timestep $dt$, log-price volatility scales like $\sigma \cdot \sqrt{dt}$. Log-price volatility means that the volatility is measured in log returns $\log(S_{next} / S_{now})$, rather than just $S_{next} / S_{now}$. The result of the log return is equal to the rate if the interest was compounded continuously where $S_{next} = S_{now} \cdot e^{\text{log price volatility}}$. This model is also a simplified two-point approximation with moves at $+\sigma \cdot \sqrt{dt}$ and $-\sigma \cdot \sqrt{dt}$.
+
+Thus, the up log-return is $+ \sigma \cdot \sqrt{dt}$, while the down log-return is $- \sigma \cdot \sqrt{dt}$. Since they're reciprocals and the returns are multiplicative, and (up and down) or (down and up) results in the original price.
+
+$q$ is the chance that the stock price goes up, while $1-q$ is the chance that the stock price goes down. We assume that there's no way to make a risk-free profit with zero net investment. Thus, the expected stock growth over one step must equal the risk-free growth. Proof to calculate $q$.
+- $E[S_{next}] = S_0 e^{r \cdot dt}$ <- risk free rate growth
+- $E[S_{next}] = q S_0 u + (1-q) S_0 d$ <- binomial tree structure
+- $S_0 e^{r \cdot dt} = q S_0 u + (1-q) S_0 d$
+- $e^{r \cdot dt} = q u + (1-q) d$ <- cancel $S_0$
+- $q = \frac{e^{r \cdot dt} -d}{u - d}$ <- some algebra to solve for $q$
+
+### Continuation vs Exercise
+Now, we can find the following
+- Continuation value = $e^{-r \cdot dt} (q \cdot S_0 \cdot u + (1-q) \cdot S_0 \cdot d)$
+- Exercise value = $max(S - K, 0)$ for calls and $max(K - S, 0)$ for puts
+
+So, we value the option as the max of continuation vs exercise value.
 
 ## Potential Improvements
 - check runtime and accuracy performance from using double instead of floats
