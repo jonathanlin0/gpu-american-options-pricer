@@ -155,5 +155,6 @@ Now, we can find the following
 So, we value the option as the max of continuation vs exercise value.
 
 ## Potential Improvements
-- check runtime and accuracy performance from using double instead of floats
-- include dividend payments in the pricing engine
+- Include dividend payments in the pricing engine
+- Add an accuracy/convergence study showing how option prices change as the number of binomial steps increases
+- Make precision configurable, e.g. `float` for speed versus `double` for tighter CPU/GPU agreement
