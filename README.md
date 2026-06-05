@@ -1,5 +1,7 @@
 # GPU-Accelerated Fair Value Options Pricing Engine
 
+This project prices the fair value (FV) of American options using the binomial lattice model.
+
 ## Installation and Usage
 
 ### Requirements
@@ -12,7 +14,7 @@ Required:
 - Internet connection to pull gtest framework
 
 ### Usage
-A single executable runs both the CPU and GPU implementations. Then, the same script checks the GPU's correctness against the CPU's outputs. There are separate tests to ensure calculation correctness. So assuming those separate correctness tests pass, equal results from the CPU and GPU calculations imply that both calculation methods are correct.
+A single executable [`src/main.cpp`](src/main.cpp) runs both the CPU and GPU implementations. Then, the same script checks the GPU's correctness against the CPU's outputs. There are separate tests to ensure calculation correctness. So assuming those separate correctness tests pass, equal results from the CPU and GPU calculations imply that both calculation methods are correct.
 
 From the repo root (on Linux computer):
 ```
@@ -31,8 +33,6 @@ cmake --build build -j
 
 ## Project Description
 
-This project prices the fair value (FV) of American options using the binomial lattice model.
-
 ### Technical Challenges
 
 American options can be exercised at any moment before the expiration date, while European options can only be exercised at the expiry. Thus, we're unable to use the Black-Scholes model to easily calculate FVs of American options. Instead, we must use a binomial model to recursively price the original option. This lattice structure can be parallelized on a GPU for performance improvements.
@@ -45,9 +45,9 @@ The main CUDA kernel is found at [src/pricing/gpu_pricer.cu](src/pricing/gpu_pri
 ![GPU Payoff array structure](figs/gpu_array_structure.png)
 Since the value of an option at time $t_j$ depends on its possible values at $t_{j+1}$, this method is a backwards induction.
 
-The kernel launches 1 block per option to price. Then, each thread $i$ calculates the payoff at index $i$ for the given timestep, starting at timestep $t_n$ to the current price $t_0$. The array at time $t_j$ is sorted by the net number of underlying "up" movements, from lowest to highest. So, thread $i$ can calculate the payoff from if the underlying goes up ($arr_{j+1}[i+1]$) or if the underlying does down ($arr_{j+1}[i]$). This is demonstrated by the blue and red arrows above. The blue corresponds with the price if the underlying went up, and the red corresponds with the price if the underlying went down. As the main loop progresses and timestep $t_j$ approaches $t_0$, the total number of active threads decreases. But this is fine, because fundamentally the induction process is a serial operation, which a GPU cannot speedup. Each layer of calculation depends on the previous layer. 
+The kernel launches 1 block per option to price. Then, each thread $i$ calculates the payoff at index $i$ for the given timestep, starting at timestep $t_n$ to the current price at time $t_0$. The array at time $t_j$ is sorted by the net number of underlying "up" movements, from lowest to highest. So, thread $i$ can calculate the payoff from if the underlying goes up ($arr_{j+1}[i+1]$) or if the underlying does down ($arr_{j+1}[i]$). This is demonstrated by the blue and red arrows above. The blue corresponds with the price if the underlying goes up, and the red corresponds with the price if the underlying goes down.
 
-The calculations of the array at each timestep are still parallelized, so there's still a lot of speedup from using a GPU. And the entire operations of calculating the options are parallelized, with a block launching for each option to price.
+The calculations of the array at each timestep are parallelized, so there's a lot of speedup from using a GPU. And the entire operations of calculating the options are parallelized, with a block launching for each option to price.
 
 ## Tests
 
@@ -85,9 +85,9 @@ Or run the test executable directly:
 #### Runtime vs Binomial Steps
 ![CPU vs GPU batch time by binomial steps](figs/steps_graph.png)
 
-The CPU and GPU runtimes w.r.t. the number of binomial steps. The higher the number of steps, the more accurate the option price estimation is. The CPU runtime is polynomial because for each additional layer in the binomial lattice structure, a $t+1$ length array is added. So, layer $t$ has to do $O(t)$ more calculations than before for the additional step of backward induction, adding $O(t)$ to the runtime. The GPU runtime remains linear, because all the threads in the given block are able to do the additional backward induction calculation in parallel. So for CPU, $O(t)$ runtime is added, while only $O(1)$ runtime is added for GPU. This figure generated with [`scripts/graph_steps.py`](scripts/graph_steps.py).
+The CPU and GPU runtimes w.r.t. the number of binomial steps. The higher the number of steps, the more accurate the option price estimation is. The CPU runtime is polynomial because for each additional layer in the binomial lattice structure, a $t+1$ length array is added. So, layer $t$ has to do $O(t)$ more calculations than before for the additional step of backward induction, adding $O(t)$ to the runtime. The GPU runtime also increases by $O(t)$, but the magnitude is a lot less because many threads are able to work at the same time. In the case of the project, there are 256 threads per block. So, the GPU runtime curve is still a parabola but much much flatter than the CPU curve. This figure generated with [`scripts/graph_steps.py`](scripts/graph_steps.py).
 
-Since the runtime is exponential for the CPU implementation and linear for the GPU implementation, the GPU implementation is obviously many times faster than the CPU implementation, assuming the number of steps is large. CPU is $O(n^2)$ while GPU is $O(n)$.
+Despite both runtimes being $O(n^2)$, the GPU remains a lot faster due to its parallel nature and much lower constant (1 / number of threads).
 
 Example experiments for this figure found at [`scripts/step_script.sh`](scripts/step_script.sh). The script for generating this figure assumes size = `medium`. 
 
@@ -97,7 +97,7 @@ The main speedup from GPU comes from backwards induction. So, I wanted to isolat
 #### Runtime vs Number of Options
 ![CPU vs GPU batch time by number of options](figs/num_options_graph.png)
 
-The CPU and GPU runtimes w.r.t. the number of option to price are both $O(n)$, assuming that each calculation has the same number of steps. However, the GPU has much higher throughput for large batches because each option is priced by an independent CUDA block, and the payoff/backward-induction work within each timestep is parallelized across threads in each block. As a result, the average time per option is much lower. This figure generated with [`scripts/graph_num_options.py`](scripts/graph_num_options.py).
+The CPU and GPU runtimes w.r.t. the number of option to price are both $O(n)$, assuming that each calculation has the same number of steps and the GPU's Streaming Multiprocessors are saturated. However, the GPU has much higher throughput for large batches because each option is priced by an independent CUDA block, and the payoff/backward-induction work within each timestep is parallelized across threads in each block. As a result, the average time per option is much lower. This figure generated with [`scripts/graph_num_options.py`](scripts/graph_num_options.py).
 
 The GPU implementation is many orders of magnitude faster than the CPU implementation.
 
