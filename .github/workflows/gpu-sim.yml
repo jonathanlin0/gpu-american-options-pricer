@@ -1,0 +1,82 @@
+name: GPU Simulator
+
+# Optional check. The hosted runners have no GPU, so this builds the gtest
+# suite and runs it on a simulated NVIDIA H100
+# (https://github.com/pantheongpu/pantheonsim). A simulator cannot reproduce
+# hardware-specific behavior or timing, so it complements real-GPU testing.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/**"
+      - "CMakeLists.txt"
+      - ".github/workflows/gpu-sim.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: pricer_tests (CUDA 13.0 and simulated H100)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+
+      - name: Set up the simulated GPU and CUDA toolkit
+        uses: pantheongpu/setup-pantheonsim@deff5781e8adfd83dec98dd5242dcbc96a564773 # v0.1.10
+        with:
+          gpu: nvidia/h100
+          cuda-toolkit: "13.0"
+
+      - name: Install GoogleTest
+        run: sudo apt-get install -y --no-install-recommends libgtest-dev
+
+      # CMakeLists.txt sets CMAKE_CUDA_ARCHITECTURES to native, which needs a
+      # real GPU, so it is replaced with 90-virtual (PTX only, which the
+      # simulator runs). The simulator needs a shared CUDA runtime.
+      # Test discovery is done at test time so no CUDA code runs during the build.
+      - name: Configure
+        run: |
+          sed -i 's/CMAKE_CUDA_ARCHITECTURES native/CMAKE_CUDA_ARCHITECTURES 90-virtual/' CMakeLists.txt
+          grep -q '90-virtual' CMakeLists.txt
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CUDA_RUNTIME_LIBRARY=Shared \
+            -DCMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE=PRE_TEST
+
+      - name: Build
+        run: vgpu run --preload cmake --build build --target pricer_tests -j3
+
+      # The CPU/GPU consistency tests compare the GPU prices with the CPU
+      # prices, and the GPU property tests check no-arbitrage bounds on the GPU
+      # output alone, so a GPU path that returned zeros or garbage would fail.
+      # The guard below also fails the job if the device was missing, a test was
+      # skipped, or a GPU test did not run.
+      - name: Test on the simulated GPU
+        run: |
+          set -o pipefail
+          vgpu run ./build/pricer_tests --gtest_output=json:gtest.json 2>&1 | tee test.log
+          if grep -Eiq 'VirtualGPU error|no CUDA-capable device|CUDA Error' test.log; then
+            echo "::error::GPU error in the test output"; exit 1
+          fi
+          python3 - <<'PY'
+          import json
+          d = json.load(open("gtest.json"))
+          cases = [t for s in d["testsuites"] for t in s["testsuite"]]
+          gpu = [t for t in cases if t["classname"] == "CpuGpuConsistencyTest"
+                 or t["name"].endswith("/GPU")]
+          print(len(cases), "tests,", len(gpu), "GPU-path tests")
+          assert d["failures"] == 0 and d["errors"] == 0, "failing tests"
+          assert gpu and len(gpu) >= 11, "GPU-path tests did not all run"
+          bad = [t["name"] for t in gpu if t.get("result") != "COMPLETED" or t.get("status") != "RUN"]
+          assert not bad, f"GPU tests skipped or not run: {bad}"
+          PY
